@@ -1,6 +1,10 @@
 import { CircleHelp } from 'lucide-react'
 
-export function EditorHeader() {
+type EditorHeaderProps = {
+  fileName?: string
+}
+
+export function EditorHeader({ fileName }: EditorHeaderProps) {
   return (
     <header className="editor-header">
       <div className="brand" aria-label="photoshopKatasonov">
@@ -21,8 +25,8 @@ export function EditorHeader() {
       </nav>
 
       <div className="document-title">
-        <span>Новый документ</span>
-        <small>не сохранён</small>
+        <span title={fileName}>{fileName ?? 'Новый документ'}</span>
+        <small>{fileName ? 'открыт' : 'не сохранён'}</small>
       </div>
 
       <button className="header-icon-button" type="button" title="Справка" aria-label="Справка">

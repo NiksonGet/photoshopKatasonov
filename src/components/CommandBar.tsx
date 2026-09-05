@@ -1,17 +1,56 @@
 import { Download, FolderOpen, Redo2, Undo2 } from 'lucide-react'
 
-export function CommandBar() {
+type CommandBarProps = {
+  isLoading: boolean
+  onFileSelect: (file: File) => void
+}
+
+export function CommandBar({
+  isLoading,
+  onFileSelect,
+}: CommandBarProps) {
   return (
     <section className="command-bar" aria-label="Команды документа">
       <div className="command-group">
-        <button className="primary-command" type="button" disabled>
+        <label
+          className={`primary-command file-command ${isLoading ? 'control-disabled' : ''}`}
+          htmlFor="image-file"
+        >
           <FolderOpen size={17} />
-          Открыть
-        </button>
-        <button className="icon-command" type="button" title="Отменить" aria-label="Отменить" disabled>
+          {isLoading ? 'Открытие...' : 'Открыть'}
+          <input
+            className="file-input-hidden"
+            id="image-file"
+            type="file"
+            accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+            disabled={isLoading}
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0]
+
+              if (file) {
+                onFileSelect(file)
+              }
+
+              event.currentTarget.value = ''
+            }}
+          />
+        </label>
+        <button
+          className="icon-command"
+          type="button"
+          title="Отменить"
+          aria-label="Отменить"
+          disabled
+        >
           <Undo2 size={17} />
         </button>
-        <button className="icon-command" type="button" title="Повторить" aria-label="Повторить" disabled>
+        <button
+          className="icon-command"
+          type="button"
+          title="Повторить"
+          aria-label="Повторить"
+          disabled
+        >
           <Redo2 size={17} />
         </button>
       </div>
@@ -33,4 +72,3 @@ export function CommandBar() {
     </section>
   )
 }
-
