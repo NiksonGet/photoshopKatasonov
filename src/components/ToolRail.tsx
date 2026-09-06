@@ -2,13 +2,14 @@ import { Grid3X3, Maximize2, MousePointer2, Pipette, SlidersHorizontal } from 'l
 import type { EditorTool } from '../domain/image'
 
 const tools = [
-  { id: 'pointer', label: 'Выбор', icon: MousePointer2 },
-  { id: 'eyedropper', label: 'Пипетка', icon: Pipette },
-  { id: null, label: 'Уровни', icon: SlidersHorizontal },
-  { id: null, label: 'Изменить размер', icon: Maximize2 },
-  { id: null, label: 'Фильтры', icon: Grid3X3 },
+  { id: 'pointer', action: null, label: 'Выбор', icon: MousePointer2 },
+  { id: 'eyedropper', action: null, label: 'Пипетка', icon: Pipette },
+  { id: null, action: 'levels', label: 'Уровни', icon: SlidersHorizontal },
+  { id: null, action: null, label: 'Изменить размер', icon: Maximize2 },
+  { id: null, action: null, label: 'Фильтры', icon: Grid3X3 },
 ] satisfies Array<{
   id: EditorTool | null
+  action: 'levels' | null
   label: string
   icon: typeof MousePointer2
 }>
@@ -16,19 +17,27 @@ const tools = [
 type ToolRailProps = {
   activeTool: EditorTool
   hasImage: boolean
+  isLevelsOpen: boolean
+  onOpenLevels: () => void
   onSelectTool: (tool: EditorTool) => void
 }
 
 export function ToolRail({
   activeTool,
   hasImage,
+  isLevelsOpen,
+  onOpenLevels,
   onSelectTool,
 }: ToolRailProps) {
   return (
     <aside className="tool-rail" aria-label="Инструменты">
-      {tools.map(({ id, label, icon: Icon }) => {
-        const isActive = id === activeTool
-        const isDisabled = id === null || (id === 'eyedropper' && !hasImage)
+      {tools.map(({ id, action, label, icon: Icon }) => {
+        const isActive = action === 'levels'
+          ? isLevelsOpen
+          : !isLevelsOpen && id === activeTool
+        const isDisabled = action === null
+          ? id === null || (id === 'eyedropper' && !hasImage)
+          : !hasImage
 
         return (
           <button
@@ -36,12 +45,14 @@ export function ToolRail({
             type="button"
             title={label}
             aria-label={label}
-            aria-pressed={id ? isActive : undefined}
+            aria-pressed={id || action ? isActive : undefined}
             disabled={isDisabled}
             key={label}
             onClick={() => {
               if (id) {
                 onSelectTool(id)
+              } else if (action === 'levels') {
+                onOpenLevels()
               }
             }}
           >

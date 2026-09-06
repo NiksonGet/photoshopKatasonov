@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { CommandBar } from './components/CommandBar'
 import { DocumentPanel } from './components/DocumentPanel'
 import { EditorHeader } from './components/EditorHeader'
 import { ImageWorkspace } from './components/ImageWorkspace'
+import { LevelsDialog } from './components/LevelsDialog'
 import { StatusBar } from './components/StatusBar'
 import { ToolRail } from './components/ToolRail'
 import type {
@@ -32,6 +33,8 @@ function App() {
   )
   const [activeTool, setActiveTool] = useState<EditorTool>('pointer')
   const [pixelSample, setPixelSample] = useState<PixelSample | null>(null)
+  const [isLevelsOpen, setIsLevelsOpen] = useState(false)
+  const [levelsPreview, setLevelsPreview] = useState<ImageData | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -45,15 +48,17 @@ function App() {
     }
 
     return composeChannelView(
-      currentImage.pixels,
+      levelsPreview ?? currentImage.pixels,
       channelVisibility,
       documentChannels,
     )
-  }, [channelVisibility, currentImage, documentChannels])
+  }, [channelVisibility, currentImage, documentChannels, levelsPreview])
 
   async function handleFileSelect(file: File) {
     setIsLoading(true)
     setErrorMessage('')
+    setIsLevelsOpen(false)
+    setLevelsPreview(null)
 
     try {
       const loadedImage = await openImageFile(file)
@@ -104,6 +109,30 @@ function App() {
     setPixelSample(null)
   }
 
+  function handleLevelsApply(pixels: ImageData) {
+    setCurrentImage((current) => current ? { ...current, pixels } : current)
+    setLevelsPreview(null)
+    setIsLevelsOpen(false)
+    setPixelSample(null)
+  }
+
+  function handleLevelsCancel() {
+    setLevelsPreview(null)
+    setIsLevelsOpen(false)
+    setPixelSample(null)
+  }
+
+  const handleLevelsPreview = useCallback((pixels: ImageData | null) => {
+    setLevelsPreview(pixels)
+    setPixelSample(null)
+  }, [])
+
+  function handleOpenLevels() {
+    setActiveTool('pointer')
+    setPixelSample(null)
+    setIsLevelsOpen(true)
+  }
+
   return (
     <div className="app-shell">
       <EditorHeader fileName={currentImage?.fileName} />
@@ -121,6 +150,8 @@ function App() {
         <ToolRail
           activeTool={activeTool}
           hasImage={currentImage !== null}
+          isLevelsOpen={isLevelsOpen}
+          onOpenLevels={handleOpenLevels}
           onSelectTool={setActiveTool}
         />
         <ImageWorkspace
@@ -146,6 +177,16 @@ function App() {
         isLoading={isLoading}
         errorMessage={errorMessage}
       />
+
+      {currentImage && isLevelsOpen && (
+        <LevelsDialog
+          image={currentImage}
+          channels={documentChannels}
+          onPreview={handleLevelsPreview}
+          onApply={handleLevelsApply}
+          onCancel={handleLevelsCancel}
+        />
+      )}
     </div>
   )
 }
