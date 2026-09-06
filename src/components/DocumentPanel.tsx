@@ -1,10 +1,27 @@
-import type { RasterDocument } from '../domain/image'
+import type {
+  ChannelVisibility,
+  ImageChannel,
+  PixelSample,
+  RasterDocument,
+} from '../domain/image'
+import type { ChannelDefinition } from '../image/channelProcessing'
+import { ChannelPanel } from './ChannelPanel'
 
 type DocumentPanelProps = {
   image: RasterDocument | null
+  channels: ChannelDefinition[]
+  channelVisibility: ChannelVisibility
+  pixelSample: PixelSample | null
+  onToggleChannel: (channel: ImageChannel) => void
 }
 
-export function DocumentPanel({ image }: DocumentPanelProps) {
+export function DocumentPanel({
+  image,
+  channels,
+  channelVisibility,
+  pixelSample,
+  onToggleChannel,
+}: DocumentPanelProps) {
   const details = [
     ['Имя', image?.fileName ?? '—'],
     ['Размер', image ? `${image.width} × ${image.height}` : '— × —'],
@@ -32,6 +49,14 @@ export function DocumentPanel({ image }: DocumentPanelProps) {
           ))}
         </dl>
       </section>
+
+      <ChannelPanel
+        image={image}
+        channels={channels}
+        visibility={channelVisibility}
+        sample={pixelSample}
+        onToggle={onToggleChannel}
+      />
 
       <section className="inspector-section history-section">
         <div className="section-heading">

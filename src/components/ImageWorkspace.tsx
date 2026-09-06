@@ -1,17 +1,24 @@
 import { ImagePlus, LoaderCircle, TriangleAlert } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import type { RasterDocument } from '../domain/image'
+import { useEffect, useRef, type MouseEvent } from 'react'
+import type { PixelSample, RasterDocument } from '../domain/image'
+import { samplePixel } from '../image/channelProcessing'
 
 type ImageWorkspaceProps = {
   image: RasterDocument | null
+  displayedPixels: ImageData | null
+  isEyedropperActive: boolean
   isLoading: boolean
   errorMessage: string
+  onPixelSample: (sample: PixelSample) => void
 }
 
 export function ImageWorkspace({
   image,
+  displayedPixels,
+  isEyedropperActive,
   isLoading,
   errorMessage,
+  onPixelSample,
 }: ImageWorkspaceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -28,13 +35,50 @@ export function ImageWorkspace({
       return
     }
 
-    if (!image) {
+    if (!displayedPixels) {
       context.clearRect(0, 0, canvas.width, canvas.height)
       return
     }
 
-    context.putImageData(image.pixels, 0, 0)
-  }, [image])
+    context.putImageData(displayedPixels, 0, 0)
+  }, [displayedPixels])
+
+  function handleCanvasClick(event: MouseEvent<HTMLCanvasElement>) {
+    const canvas = canvasRef.current
+
+    if (
+      event.button !== 0 ||
+      !canvas ||
+      !displayedPixels ||
+      !isEyedropperActive
+    ) {
+      return
+    }
+
+    const bounds = canvas.getBoundingClientRect()
+
+    if (bounds.width === 0 || bounds.height === 0) {
+      return
+    }
+
+    const x = Math.floor(
+      ((event.clientX - bounds.left) * displayedPixels.width) / bounds.width,
+    )
+    const y = Math.floor(
+      ((event.clientY - bounds.top) * displayedPixels.height) / bounds.height,
+    )
+
+    if (
+      x < 0 ||
+      y < 0 ||
+      x >= displayedPixels.width ||
+      y >= displayedPixels.height
+    ) {
+      return
+    }
+
+    onPixelSample(samplePixel(displayedPixels, x, y))
+  }
 
   return (
     <main className="workspace">
@@ -45,10 +89,11 @@ export function ImageWorkspace({
         <div className={`canvas-frame ${image ? 'canvas-frame-loaded' : ''}`}>
           <canvas
             ref={canvasRef}
-            className="image-canvas"
+            className={`image-canvas ${isEyedropperActive ? 'image-canvas-eyedropper' : ''}`}
             width={image?.width ?? 720}
             height={image?.height ?? 420}
             aria-label="Рабочий холст изображения"
+            onClick={handleCanvasClick}
           />
           {!image && !isLoading && (
             <div className="empty-document">
