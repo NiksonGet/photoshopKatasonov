@@ -8,6 +8,8 @@ export function DocumentPanel({ image }: DocumentPanelProps) {
   const details = [
     ['Имя', image?.fileName ?? '—'],
     ['Размер', image ? `${image.width} × ${image.height}` : '— × —'],
+    ['Пиксели', image ? formatPixelCount(image.width * image.height) : '—'],
+    ['Объём', image ? formatFileSize(image.fileSizeBytes) : '—'],
     ['Формат', image ? getFormatLabel(image) : '—'],
     ['Каналы', image ? String(image.sourceChannels) : '—'],
     ['Глубина', image?.colorDepth ?? '—'],
@@ -46,4 +48,28 @@ export function DocumentPanel({ image }: DocumentPanelProps) {
 
 function getFormatLabel(image: RasterDocument): string {
   return image.format === 'jpeg' ? 'JPEG' : image.format.toUpperCase()
+}
+
+function formatPixelCount(pixelCount: number): string {
+  if (pixelCount >= 1_000_000) {
+    return `${formatNumber(pixelCount / 1_000_000, 2)} Мп`
+  }
+
+  return `${formatNumber(pixelCount, 0)} px`
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes} Б`
+  }
+
+  if (bytes < 1024 ** 2) {
+    return `${formatNumber(bytes / 1024, 1)} КБ`
+  }
+
+  return `${formatNumber(bytes / 1024 ** 2, 2)} МБ`
+}
+
+function formatNumber(value: number, maximumFractionDigits: number): string {
+  return new Intl.NumberFormat('ru-RU', { maximumFractionDigits }).format(value)
 }

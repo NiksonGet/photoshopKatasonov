@@ -53,6 +53,7 @@ export async function loadBrowserImage(file: File): Promise<RasterDocument> {
     return {
       pixels,
       fileName: file.name,
+      fileSizeBytes: file.size,
       format,
       width: pixels.width,
       height: pixels.height,

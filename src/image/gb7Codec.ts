@@ -73,6 +73,7 @@ export function decodeGb7(
   return {
     pixels: new ImageData(rgba, width, height),
     fileName,
+    fileSizeBytes: bytes.byteLength,
     format: 'gb7',
     width,
     height,

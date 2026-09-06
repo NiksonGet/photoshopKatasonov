@@ -157,6 +157,12 @@
   background: #c94f22;
 }
 
+.secondary-command:not(:disabled):hover {
+  border-color: #9d3f1e;
+  color: #ffffff;
+  background: #b94720;
+}
+
 .file-input-hidden {
   position: absolute;
   width: 1px;
@@ -212,6 +218,10 @@
 .command-bar select {
   min-width: 76px;
   padding: 0 26px 0 9px;
+}
+
+.command-spinner {
+  animation: notice-spin 0.9s linear infinite;
 }
 
 .editor-layout {
@@ -536,6 +546,17 @@
 
 .status-failed i {
   background: #d75527;
+}
+
+.status-busy i {
+  background: var(--accent);
+  animation: status-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes status-pulse {
+  to {
+    opacity: 0.35;
+  }
 }
 
 .status-document {
