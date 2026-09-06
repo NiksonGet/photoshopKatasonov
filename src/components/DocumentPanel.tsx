@@ -9,6 +9,7 @@ export function DocumentPanel({ image }: DocumentPanelProps) {
     ['Имя', image?.fileName ?? '—'],
     ['Размер', image ? `${image.width} × ${image.height}` : '— × —'],
     ['Формат', image ? getFormatLabel(image) : '—'],
+    ['Каналы', image ? String(image.sourceChannels) : '—'],
     ['Глубина', image?.colorDepth ?? '—'],
   ]
 

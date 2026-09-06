@@ -6,7 +6,7 @@ import { ImageWorkspace } from './components/ImageWorkspace'
 import { StatusBar } from './components/StatusBar'
 import { ToolRail } from './components/ToolRail'
 import type { RasterDocument } from './domain/image'
-import { loadBrowserImage } from './image/browserImageLoader'
+import { openImageFile } from './image/imageFileLoader'
 import './App.css'
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
     setErrorMessage('')
 
     try {
-      const loadedImage = await loadBrowserImage(file)
+      const loadedImage = await openImageFile(file)
       setCurrentImage(loadedImage)
     } catch (error) {
       setErrorMessage(

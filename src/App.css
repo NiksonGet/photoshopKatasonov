@@ -349,7 +349,6 @@
   width: max-content;
   min-width: 0;
   aspect-ratio: auto;
-  background: #ffffff;
 }
 
 .canvas-frame-loaded .image-canvas {

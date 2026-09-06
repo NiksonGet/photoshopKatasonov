@@ -22,7 +22,7 @@ export function CommandBar({
             className="file-input-hidden"
             id="image-file"
             type="file"
-            accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+            accept=".png,.jpg,.jpeg,.gb7,image/png,image/jpeg"
             disabled={isLoading}
             onChange={(event) => {
               const file = event.currentTarget.files?.[0]

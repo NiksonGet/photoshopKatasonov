@@ -56,7 +56,7 @@ export function ImageWorkspace({
                 <ImagePlus size={30} strokeWidth={1.6} />
               </span>
               <strong>Откройте изображение</strong>
-              <span>PNG или JPG</span>
+              <span>PNG, JPG или GB7</span>
             </div>
           )}
         </div>
