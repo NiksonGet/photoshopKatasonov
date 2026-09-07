@@ -23,6 +23,7 @@ body,
 
 body {
   min-width: 320px;
+  overscroll-behavior: none;
 }
 
 button,
@@ -35,4 +36,3 @@ button,
 select {
   letter-spacing: 0;
 }
-

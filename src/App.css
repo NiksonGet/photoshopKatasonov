@@ -46,6 +46,11 @@
   display: flex;
   gap: 2px;
   align-items: center;
+  scrollbar-width: none;
+}
+
+.menu-list::-webkit-scrollbar {
+  display: none;
 }
 
 .menu-list button {
@@ -116,6 +121,7 @@
   gap: 12px;
   align-items: center;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   border-bottom: 1px solid #c9c4ba;
   background: #eae6de;
 }
@@ -334,6 +340,7 @@
   align-items: safe center;
   justify-content: safe center;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .canvas-frame {
@@ -366,7 +373,7 @@
   cursor: crosshair;
 }
 
-.canvas-frame-loaded {
+.canvas-frame.canvas-frame-loaded {
   width: max-content;
   min-width: 0;
   aspect-ratio: auto;
@@ -458,6 +465,7 @@
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   border-left: 1px solid var(--line);
   background: var(--paper-strong);
 }
@@ -1660,7 +1668,7 @@ input:focus-visible {
 
   .editor-layout {
     grid-template-columns: 48px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) 116px;
+    grid-template-rows: minmax(0, 1fr) clamp(150px, 24dvh, 210px);
   }
 
   .tool-rail {
@@ -1679,13 +1687,16 @@ input:focus-visible {
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
+    scroll-snap-type: x proximity;
     border-top: 1px solid var(--line);
     border-left: 0;
   }
 
   .inspector-section {
-    min-width: 250px;
+    min-width: min(280px, 78vw);
+    flex: 0 0 min(280px, 78vw);
     overflow-y: auto;
+    scroll-snap-align: start;
     padding: 12px 14px;
     border-right: 1px solid var(--line);
     border-bottom: 0;
@@ -1714,9 +1725,16 @@ input:focus-visible {
   }
 
   .levels-dialog {
-    inset: 100px auto auto 58px;
-    width: calc(100vw - 70px);
-    max-height: calc(100dvh - 140px);
+    inset: auto 8px 36px 58px;
+    width: auto;
+    max-height: min(48dvh, 520px);
+  }
+
+  .levels-dialog-header,
+  .filter-dialog-header {
+    position: sticky;
+    z-index: 4;
+    top: 0;
   }
 
   .levels-toolbar {
@@ -1732,6 +1750,9 @@ input:focus-visible {
   }
 
   .levels-dialog-footer {
+    position: sticky;
+    z-index: 4;
+    bottom: 0;
     align-items: stretch;
     flex-direction: column;
   }
@@ -1746,12 +1767,15 @@ input:focus-visible {
   }
 
   .filter-dialog {
-    inset: 100px auto auto 58px;
-    width: calc(100vw - 70px);
-    max-height: calc(100dvh - 140px);
+    inset: auto 8px 36px 58px;
+    width: auto;
+    max-height: min(48dvh, 520px);
   }
 
   .filter-dialog-footer {
+    position: sticky;
+    z-index: 4;
+    bottom: 0;
     align-items: stretch;
     flex-direction: column;
   }
@@ -1791,7 +1815,7 @@ input:focus-visible {
 
   .export-group label,
   .command-separator,
-  .icon-command {
+  .command-bar .icon-command {
     display: none;
   }
 

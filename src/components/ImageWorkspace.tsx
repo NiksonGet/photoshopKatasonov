@@ -9,6 +9,7 @@ type ImageWorkspaceProps = {
   renderedPixels: ImageData | null
   sampleSource: ImageData | null
   fitRequestId: number
+  autoFitEnabled: boolean
   isEyedropperActive: boolean
   isLoading: boolean
   errorMessage: string
@@ -21,6 +22,7 @@ export function ImageWorkspace({
   renderedPixels,
   sampleSource,
   fitRequestId,
+  autoFitEnabled,
   isEyedropperActive,
   isLoading,
   errorMessage,
@@ -29,7 +31,6 @@ export function ImageWorkspace({
 }: ImageWorkspaceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const handledFitRequestRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -53,11 +54,7 @@ export function ImageWorkspace({
   }, [renderedPixels])
 
   useLayoutEffect(() => {
-    if (
-      !image ||
-      fitRequestId === 0 ||
-      handledFitRequestRef.current === fitRequestId
-    ) {
+    if (!image || fitRequestId === 0 || !autoFitEnabled) {
       return
     }
 
@@ -67,22 +64,37 @@ export function ImageWorkspace({
       return
     }
 
-    const bounds = scrollArea.getBoundingClientRect()
+    let frameId = 0
 
-    if (bounds.width < 1 || bounds.height < 1) {
-      return
+    const updateFit = () => {
+      cancelAnimationFrame(frameId)
+      frameId = requestAnimationFrame(() => {
+        const bounds = scrollArea.getBoundingClientRect()
+
+        if (bounds.width < 1 || bounds.height < 1) {
+          return
+        }
+
+        onAutoFit(
+          calculateFitScale(
+            image.width,
+            image.height,
+            bounds.width,
+            bounds.height,
+          ),
+        )
+      })
     }
+    const resizeObserver = new ResizeObserver(updateFit)
 
-    handledFitRequestRef.current = fitRequestId
-    onAutoFit(
-      calculateFitScale(
-        image.width,
-        image.height,
-        bounds.width,
-        bounds.height,
-      ),
-    )
-  }, [fitRequestId, image, onAutoFit])
+    updateFit()
+    resizeObserver.observe(scrollArea)
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      resizeObserver.disconnect()
+    }
+  }, [autoFitEnabled, fitRequestId, image, onAutoFit])
 
   function handleCanvasClick(event: MouseEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current

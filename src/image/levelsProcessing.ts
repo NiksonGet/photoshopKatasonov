@@ -115,11 +115,9 @@ export function applyLevelsCorrection(
 }
 
 export function getGammaMarkerPosition(input: LevelsInput): number {
-  const normalizedGamma =
-    Math.log(input.gamma / GAMMA_MINIMUM) /
-    Math.log(GAMMA_MAXIMUM / GAMMA_MINIMUM)
+  const normalizedMidpoint = 0.5 ** input.gamma
   const position = input.blackPoint +
-    normalizedGamma * (input.whitePoint - input.blackPoint)
+    normalizedMidpoint * (input.whitePoint - input.blackPoint)
 
   return clamp(position, input.blackPoint + 1, input.whitePoint - 1)
 }
@@ -131,11 +129,10 @@ export function getGammaFromMarker(
 ): number {
   const normalizedPosition = clamp(
     (markerPosition - blackPoint) / (whitePoint - blackPoint),
-    0,
-    1,
+    0.001,
+    0.999,
   )
-  const gamma = GAMMA_MINIMUM *
-    (GAMMA_MAXIMUM / GAMMA_MINIMUM) ** normalizedPosition
+  const gamma = Math.log(normalizedPosition) / Math.log(0.5)
 
   return clamp(roundToHundredths(gamma), GAMMA_MINIMUM, GAMMA_MAXIMUM)
 }
@@ -156,7 +153,7 @@ function createLookupTable(input: LevelsInput): Uint8ClampedArray {
       table[value] = 255
     } else {
       const relativeTone = (value - normalized.blackPoint) / inputRange
-      table[value] = Math.round(255 * relativeTone ** normalized.gamma)
+      table[value] = Math.round(255 * relativeTone ** (1 / normalized.gamma))
     }
   }
 
@@ -169,10 +166,10 @@ function getToneValue(
   target: LevelsTarget,
 ): number {
   if (target === 'master') {
-    return Math.round(
-      data[index] * 0.299 +
-      data[index + 1] * 0.587 +
-      data[index + 2] * 0.114,
+    return getRelativeLuminanceTone(
+      data[index],
+      data[index + 1],
+      data[index + 2],
     )
   }
 
@@ -189,6 +186,28 @@ function getToneValue(
   }
 
   return data[index]
+}
+
+function getRelativeLuminanceTone(
+  red: number,
+  green: number,
+  blue: number,
+): number {
+  const linearRed = linearizeSrgb(red / 255)
+  const linearGreen = linearizeSrgb(green / 255)
+  const linearBlue = linearizeSrgb(blue / 255)
+
+  return Math.round(255 * (
+    0.2126 * linearRed +
+    0.7152 * linearGreen +
+    0.0722 * linearBlue
+  ))
+}
+
+function linearizeSrgb(value: number): number {
+  return value <= 0.04045
+    ? value / 12.92
+    : ((value + 0.055) / 1.055) ** 2.4
 }
 
 function roundToHundredths(value: number): number {

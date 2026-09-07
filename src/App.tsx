@@ -47,6 +47,7 @@ function App() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [filterPreview, setFilterPreview] = useState<ImageData | null>(null)
   const [displayScale, setDisplayScale] = useState(100)
+  const [autoFitEnabled, setAutoFitEnabled] = useState(true)
   const [fitRequestId, setFitRequestId] = useState(0)
   const [isExporting, setIsExporting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -106,6 +107,7 @@ function App() {
       setChannelVisibility(createChannelVisibility())
       setPixelSample(null)
       setDisplayScale(100)
+      setAutoFitEnabled(true)
       setFitRequestId((current) => current + 1)
     } catch (error) {
       setErrorMessage(
@@ -188,6 +190,7 @@ function App() {
         }
       : current)
     setIsResizeOpen(false)
+    setAutoFitEnabled(false)
     setPixelSample(null)
   }
 
@@ -230,6 +233,12 @@ function App() {
   }
 
   const handleDisplayScaleChange = useCallback((scale: number) => {
+    setAutoFitEnabled(false)
+    setDisplayScale(clampDisplayScale(scale))
+    setPixelSample(null)
+  }, [])
+
+  const handleAutoFit = useCallback((scale: number) => {
     setDisplayScale(clampDisplayScale(scale))
     setPixelSample(null)
   }, [])
@@ -264,10 +273,11 @@ function App() {
           renderedPixels={renderedPixels}
           sampleSource={displayedPixels}
           fitRequestId={fitRequestId}
+          autoFitEnabled={autoFitEnabled}
           isEyedropperActive={activeTool === 'eyedropper'}
           isLoading={isLoading}
           errorMessage={errorMessage}
-          onAutoFit={handleDisplayScaleChange}
+          onAutoFit={handleAutoFit}
           onPixelSample={setPixelSample}
         />
         <DocumentPanel
