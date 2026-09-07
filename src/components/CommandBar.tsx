@@ -1,4 +1,4 @@
-import { Download, FolderOpen, LoaderCircle, Redo2, Undo2 } from 'lucide-react'
+import { Download, FolderOpen, LoaderCircle } from 'lucide-react'
 import type { ExportImageFormat } from '../domain/image'
 
 type CommandBarProps = {
@@ -48,24 +48,6 @@ export function CommandBar({
             }}
           />
         </label>
-        <button
-          className="icon-command"
-          type="button"
-          title="Отменить"
-          aria-label="Отменить"
-          disabled
-        >
-          <Undo2 size={17} />
-        </button>
-        <button
-          className="icon-command"
-          type="button"
-          title="Повторить"
-          aria-label="Повторить"
-          disabled
-        >
-          <Redo2 size={17} />
-        </button>
       </div>
 
       <span className="command-separator" aria-hidden="true" />

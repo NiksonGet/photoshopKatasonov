@@ -57,16 +57,6 @@ export function DocumentPanel({
         sample={pixelSample}
         onToggle={onToggleChannel}
       />
-
-      <section className="inspector-section history-section">
-        <div className="section-heading">
-          <h2>История</h2>
-          <span>{image ? '1 действие' : '0 действий'}</span>
-        </div>
-        <p className="empty-history">
-          {image ? 'Изображение открыто' : 'История изменений пуста'}
-        </p>
-      </section>
     </aside>
   )
 }
