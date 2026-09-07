@@ -43,6 +43,15 @@ export function createLevelsSettings(): LevelsSettings {
 export function getLevelsTargets(
   channels: readonly ChannelDefinition[],
 ): LevelsTargetOption[] {
+  if (channels.some(({ id }) => id === 'gray')) {
+    return [
+      { id: 'master', label: 'Gray (Master)' },
+      ...channels
+        .filter(({ id }) => id === 'alpha')
+        .map(({ id }) => ({ id, label: TARGET_LABELS[id] })),
+    ]
+  }
+
   return [
     { id: 'master', label: TARGET_LABELS.master },
     ...channels.map(({ id }) => ({ id, label: TARGET_LABELS[id] })),
