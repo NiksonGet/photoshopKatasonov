@@ -3,6 +3,7 @@ import { CommandBar } from './components/CommandBar'
 import { DocumentPanel } from './components/DocumentPanel'
 import { EditorHeader } from './components/EditorHeader'
 import { ImageWorkspace } from './components/ImageWorkspace'
+import { KernelFilterDialog } from './components/KernelFilterDialog'
 import { LevelsDialog } from './components/LevelsDialog'
 import { ResizeDialog } from './components/ResizeDialog'
 import { StatusBar } from './components/StatusBar'
@@ -43,6 +44,8 @@ function App() {
   const [isLevelsOpen, setIsLevelsOpen] = useState(false)
   const [levelsPreview, setLevelsPreview] = useState<ImageData | null>(null)
   const [isResizeOpen, setIsResizeOpen] = useState(false)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [filterPreview, setFilterPreview] = useState<ImageData | null>(null)
   const [displayScale, setDisplayScale] = useState(100)
   const [fitRequestId, setFitRequestId] = useState(0)
   const [isExporting, setIsExporting] = useState(false)
@@ -58,11 +61,17 @@ function App() {
     }
 
     return composeChannelView(
-      levelsPreview ?? currentImage.pixels,
+      levelsPreview ?? filterPreview ?? currentImage.pixels,
       channelVisibility,
       documentChannels,
     )
-  }, [channelVisibility, currentImage, documentChannels, levelsPreview])
+  }, [
+    channelVisibility,
+    currentImage,
+    documentChannels,
+    filterPreview,
+    levelsPreview,
+  ])
   const renderedPixels = useMemo(() => {
     if (!displayedPixels) {
       return null
@@ -88,6 +97,8 @@ function App() {
     setIsLevelsOpen(false)
     setLevelsPreview(null)
     setIsResizeOpen(false)
+    setIsFilterOpen(false)
+    setFilterPreview(null)
 
     try {
       const loadedImage = await openImageFile(file)
@@ -162,6 +173,8 @@ function App() {
     setActiveTool('pointer')
     setPixelSample(null)
     setIsResizeOpen(false)
+    setFilterPreview(null)
+    setIsFilterOpen(false)
     setIsLevelsOpen(true)
   }
 
@@ -183,7 +196,37 @@ function App() {
     setPixelSample(null)
     setLevelsPreview(null)
     setIsLevelsOpen(false)
+    setFilterPreview(null)
+    setIsFilterOpen(false)
     setIsResizeOpen(true)
+  }
+
+  function handleFilterApply(pixels: ImageData) {
+    setCurrentImage((current) => current ? { ...current, pixels } : current)
+    setFilterPreview(null)
+    setIsFilterOpen(false)
+    setPixelSample(null)
+  }
+
+  function handleFilterCancel() {
+    setFilterPreview(null)
+    setIsFilterOpen(false)
+    setPixelSample(null)
+  }
+
+  const handleFilterPreview = useCallback((pixels: ImageData | null) => {
+    setFilterPreview(pixels)
+    setPixelSample(null)
+  }, [])
+
+  function handleOpenFilter() {
+    setActiveTool('pointer')
+    setPixelSample(null)
+    setLevelsPreview(null)
+    setFilterPreview(null)
+    setIsLevelsOpen(false)
+    setIsResizeOpen(false)
+    setIsFilterOpen(true)
   }
 
   const handleDisplayScaleChange = useCallback((scale: number) => {
@@ -210,8 +253,10 @@ function App() {
           hasImage={currentImage !== null}
           isLevelsOpen={isLevelsOpen}
           isResizeOpen={isResizeOpen}
+          isFilterOpen={isFilterOpen}
           onOpenLevels={handleOpenLevels}
           onOpenResize={handleOpenResize}
+          onOpenFilter={handleOpenFilter}
           onSelectTool={setActiveTool}
         />
         <ImageWorkspace
@@ -258,6 +303,16 @@ function App() {
           image={currentImage}
           onApply={handleResizeApply}
           onCancel={() => setIsResizeOpen(false)}
+        />
+      )}
+
+      {currentImage && isFilterOpen && (
+        <KernelFilterDialog
+          image={currentImage}
+          channels={documentChannels}
+          onPreview={handleFilterPreview}
+          onApply={handleFilterApply}
+          onCancel={handleFilterCancel}
         />
       )}
     </div>

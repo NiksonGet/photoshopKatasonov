@@ -1,5 +1,5 @@
 import { ImagePlus, LoaderCircle, TriangleAlert } from 'lucide-react'
-import { useEffect, useRef, type MouseEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, type MouseEvent } from 'react'
 import type { PixelSample, RasterDocument } from '../domain/image'
 import { samplePixel } from '../image/channelProcessing'
 import { calculateFitScale } from '../image/imageScaling'
@@ -52,7 +52,7 @@ export function ImageWorkspace({
     context.putImageData(renderedPixels, 0, 0)
   }, [renderedPixels])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (
       !image ||
       fitRequestId === 0 ||
@@ -61,31 +61,27 @@ export function ImageWorkspace({
       return
     }
 
-    const frameId = requestAnimationFrame(() => {
-      const scrollArea = scrollAreaRef.current
+    const scrollArea = scrollAreaRef.current
 
-      if (!scrollArea) {
-        return
-      }
+    if (!scrollArea) {
+      return
+    }
 
-      const bounds = scrollArea.getBoundingClientRect()
+    const bounds = scrollArea.getBoundingClientRect()
 
-      if (bounds.width < 1 || bounds.height < 1) {
-        return
-      }
+    if (bounds.width < 1 || bounds.height < 1) {
+      return
+    }
 
-      handledFitRequestRef.current = fitRequestId
-      onAutoFit(
-        calculateFitScale(
-          image.width,
-          image.height,
-          bounds.width,
-          bounds.height,
-        ),
-      )
-    })
-
-    return () => cancelAnimationFrame(frameId)
+    handledFitRequestRef.current = fitRequestId
+    onAutoFit(
+      calculateFitScale(
+        image.width,
+        image.height,
+        bounds.width,
+        bounds.height,
+      ),
+    )
   }, [fitRequestId, image, onAutoFit])
 
   function handleCanvasClick(event: MouseEvent<HTMLCanvasElement>) {

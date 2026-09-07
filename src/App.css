@@ -796,7 +796,8 @@ input:focus-visible {
 }
 
 .levels-dialog-header,
-.resize-dialog-header {
+.resize-dialog-header,
+.filter-dialog-header {
   min-height: 54px;
   padding: 9px 10px 9px 14px;
   display: flex;
@@ -808,20 +809,23 @@ input:focus-visible {
 }
 
 .levels-dialog-header > span,
-.resize-dialog-header > span {
+.resize-dialog-header > span,
+.filter-dialog-header > span {
   display: grid;
   gap: 1px;
 }
 
 .levels-dialog-header small,
-.resize-dialog-header small {
+.resize-dialog-header small,
+.filter-dialog-header small {
   color: var(--muted);
   font-size: 9px;
   text-transform: uppercase;
 }
 
 .levels-dialog-header h2,
-.resize-dialog-header h2 {
+.resize-dialog-header h2,
+.filter-dialog-header h2 {
   margin: 0;
   font-size: 16px;
 }
@@ -1361,6 +1365,261 @@ input:focus-visible {
   cursor: wait;
 }
 
+.filter-dialog {
+  position: fixed;
+  inset: 108px auto auto 70px;
+  z-index: 22;
+  width: min(444px, calc(100vw - 96px));
+  max-height: calc(100dvh - 150px);
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #aaa398;
+  border-radius: 7px;
+  color: var(--text);
+  background: #f8f5ef;
+  box-shadow: 0 18px 54px rgb(0 0 0 / 35%);
+}
+
+.filter-dialog::backdrop {
+  background: transparent;
+}
+
+.filter-dialog-content {
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.filter-selectors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.filter-selectors label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.filter-selectors label > span,
+.filter-section-heading > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.filter-selectors select {
+  width: 100%;
+  height: 34px;
+  padding: 0 28px 0 9px;
+  border: 1px solid #c6c0b6;
+  border-radius: 5px;
+  color: var(--text);
+  background: #fffdfa;
+}
+
+.kernel-editor,
+.filter-channels {
+  min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid #d6d0c6;
+}
+
+.filter-section-heading {
+  margin-bottom: 9px;
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.filter-section-heading h3 {
+  margin: 0;
+  font-size: 11px;
+}
+
+.kernel-input-grid {
+  width: min(244px, 100%);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kernel-input-grid input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 6px;
+  border: 1px solid #bbb5ab;
+  border-radius: 4px;
+  color: #2f2d29;
+  background: #fffdfa;
+  text-align: center;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kernel-input-grid input:focus {
+  border-color: var(--secondary);
+  background: #ffffff;
+}
+
+.filter-channel-grid {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-channel-option {
+  min-height: 30px;
+  padding: 0 9px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #ccc6bc;
+  border-radius: 5px;
+  color: #4f4b45;
+  background: #fffdfa;
+  font-size: 11px;
+}
+
+.filter-channel-option:has(input:checked) {
+  border-color: #73a3a6;
+  color: #245f64;
+  background: #e8f2f1;
+}
+
+.filter-channel-option input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--secondary);
+}
+
+.filter-channel-mark {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border: 1px solid rgb(0 0 0 / 18%);
+  border-radius: 2px;
+}
+
+.filter-channel-red {
+  background: #dc5743;
+}
+
+.filter-channel-green {
+  background: #4b9f6e;
+}
+
+.filter-channel-blue {
+  background: #4f78bc;
+}
+
+.filter-channel-alpha,
+.filter-channel-gray {
+  background: linear-gradient(135deg, #313236 50%, #f1f0ec 50%);
+}
+
+.filter-progress {
+  position: relative;
+  min-height: 34px;
+  padding: 7px 9px 9px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  border: 1px solid #c6d4d3;
+  border-radius: 5px;
+  color: #355f62;
+  background: #edf5f4;
+  font-size: 10px;
+}
+
+.filter-progress span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.filter-progress strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-progress > i {
+  position: absolute;
+  right: auto;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--secondary);
+  transition: width 80ms linear;
+}
+
+.filter-error {
+  margin: 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--accent);
+  color: #8f3518;
+  background: #fff0e9;
+  font-size: 11px;
+}
+
+.filter-dialog-footer {
+  min-height: 58px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #cfc9be;
+  background: #eee9e1;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c3bdb3;
+  border-radius: 5px;
+  color: var(--text);
+  background: #fffdfa;
+  font-size: 11px;
+}
+
+.filter-actions button:not(:disabled):hover {
+  background: #e1dcd3;
+}
+
+.filter-actions .apply-filter-button {
+  border-color: #a54220;
+  color: #ffffff;
+  background: var(--accent);
+}
+
+.filter-actions .apply-filter-button:not(:disabled):hover {
+  background: #bd4d25;
+}
+
+.filter-actions button:disabled,
+.filter-selectors select:disabled,
+.kernel-input-grid input:disabled,
+.filter-channel-option:has(input:disabled) {
+  opacity: 0.58;
+  cursor: wait;
+}
+
 @media (max-width: 900px) {
   .editor-header {
     grid-template-columns: auto minmax(180px, 1fr) auto;
@@ -1485,6 +1744,21 @@ input:focus-visible {
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
   }
+
+  .filter-dialog {
+    inset: 100px auto auto 58px;
+    width: calc(100vw - 70px);
+    max-height: calc(100dvh - 140px);
+  }
+
+  .filter-dialog-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filter-actions button {
+    flex: 1;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1556,5 +1830,13 @@ input:focus-visible {
 
   .resize-dialog-content {
     padding: 12px;
+  }
+
+  .filter-dialog-content {
+    padding: 12px;
+  }
+
+  .filter-selectors {
+    grid-template-columns: 1fr;
   }
 }
