@@ -5,11 +5,11 @@ const tools = [
   { id: 'pointer', action: null, label: 'Выбор', icon: MousePointer2 },
   { id: 'eyedropper', action: null, label: 'Пипетка', icon: Pipette },
   { id: null, action: 'levels', label: 'Уровни', icon: SlidersHorizontal },
-  { id: null, action: null, label: 'Изменить размер', icon: Maximize2 },
+  { id: null, action: 'resize', label: 'Изменить размер', icon: Maximize2 },
   { id: null, action: null, label: 'Фильтры', icon: Grid3X3 },
 ] satisfies Array<{
   id: EditorTool | null
-  action: 'levels' | null
+  action: 'levels' | 'resize' | null
   label: string
   icon: typeof MousePointer2
 }>
@@ -18,7 +18,9 @@ type ToolRailProps = {
   activeTool: EditorTool
   hasImage: boolean
   isLevelsOpen: boolean
+  isResizeOpen: boolean
   onOpenLevels: () => void
+  onOpenResize: () => void
   onSelectTool: (tool: EditorTool) => void
 }
 
@@ -26,15 +28,20 @@ export function ToolRail({
   activeTool,
   hasImage,
   isLevelsOpen,
+  isResizeOpen,
   onOpenLevels,
+  onOpenResize,
   onSelectTool,
 }: ToolRailProps) {
   return (
     <aside className="tool-rail" aria-label="Инструменты">
       {tools.map(({ id, action, label, icon: Icon }) => {
+        const hasOpenDialog = isLevelsOpen || isResizeOpen
         const isActive = action === 'levels'
           ? isLevelsOpen
-          : !isLevelsOpen && id === activeTool
+          : action === 'resize'
+            ? isResizeOpen
+            : !hasOpenDialog && id === activeTool
         const isDisabled = action === null
           ? id === null || (id === 'eyedropper' && !hasImage)
           : !hasImage
@@ -53,6 +60,8 @@ export function ToolRail({
                 onSelectTool(id)
               } else if (action === 'levels') {
                 onOpenLevels()
+              } else if (action === 'resize') {
+                onOpenResize()
               }
             }}
           >

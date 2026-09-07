@@ -87,6 +87,8 @@ export function CommandBar({
         <button
           className="secondary-command"
           type="button"
+          title={isExporting ? 'Сохранение изображения' : 'Экспорт изображения'}
+          aria-label={isExporting ? 'Сохранение изображения' : 'Экспорт изображения'}
           disabled={!hasImage || isBusy}
           onClick={onExport}
         >
@@ -95,7 +97,9 @@ export function CommandBar({
           ) : (
             <Download size={17} />
           )}
-          {isExporting ? 'Сохранение...' : 'Экспорт'}
+          <span className="export-command-label">
+            {isExporting ? 'Сохранение...' : 'Экспорт'}
+          </span>
         </button>
       </div>
     </section>

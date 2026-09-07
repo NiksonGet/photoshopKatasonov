@@ -4,6 +4,7 @@ import { DocumentPanel } from './components/DocumentPanel'
 import { EditorHeader } from './components/EditorHeader'
 import { ImageWorkspace } from './components/ImageWorkspace'
 import { LevelsDialog } from './components/LevelsDialog'
+import { ResizeDialog } from './components/ResizeDialog'
 import { StatusBar } from './components/StatusBar'
 import { ToolRail } from './components/ToolRail'
 import type {
@@ -23,6 +24,12 @@ import {
   downloadImageExport,
 } from './image/imageExporter'
 import { openImageFile } from './image/imageFileLoader'
+import {
+  clampDisplayScale,
+  DEFAULT_INTERPOLATION,
+  getScaledDimensions,
+  resizeImageData,
+} from './image/imageScaling'
 import './App.css'
 
 function App() {
@@ -35,6 +42,9 @@ function App() {
   const [pixelSample, setPixelSample] = useState<PixelSample | null>(null)
   const [isLevelsOpen, setIsLevelsOpen] = useState(false)
   const [levelsPreview, setLevelsPreview] = useState<ImageData | null>(null)
+  const [isResizeOpen, setIsResizeOpen] = useState(false)
+  const [displayScale, setDisplayScale] = useState(100)
+  const [fitRequestId, setFitRequestId] = useState(0)
   const [isExporting, setIsExporting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -53,18 +63,39 @@ function App() {
       documentChannels,
     )
   }, [channelVisibility, currentImage, documentChannels, levelsPreview])
+  const renderedPixels = useMemo(() => {
+    if (!displayedPixels) {
+      return null
+    }
+
+    const dimensions = getScaledDimensions(
+      displayedPixels.width,
+      displayedPixels.height,
+      displayScale,
+    )
+
+    return resizeImageData(
+      displayedPixels,
+      dimensions.width,
+      dimensions.height,
+      DEFAULT_INTERPOLATION,
+    )
+  }, [displayScale, displayedPixels])
 
   async function handleFileSelect(file: File) {
     setIsLoading(true)
     setErrorMessage('')
     setIsLevelsOpen(false)
     setLevelsPreview(null)
+    setIsResizeOpen(false)
 
     try {
       const loadedImage = await openImageFile(file)
       setCurrentImage(loadedImage)
       setChannelVisibility(createChannelVisibility())
       setPixelSample(null)
+      setDisplayScale(100)
+      setFitRequestId((current) => current + 1)
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -130,8 +161,35 @@ function App() {
   function handleOpenLevels() {
     setActiveTool('pointer')
     setPixelSample(null)
+    setIsResizeOpen(false)
     setIsLevelsOpen(true)
   }
+
+  function handleResizeApply(pixels: ImageData) {
+    setCurrentImage((current) => current
+      ? {
+          ...current,
+          pixels,
+          width: pixels.width,
+          height: pixels.height,
+        }
+      : current)
+    setIsResizeOpen(false)
+    setPixelSample(null)
+  }
+
+  function handleOpenResize() {
+    setActiveTool('pointer')
+    setPixelSample(null)
+    setLevelsPreview(null)
+    setIsLevelsOpen(false)
+    setIsResizeOpen(true)
+  }
+
+  const handleDisplayScaleChange = useCallback((scale: number) => {
+    setDisplayScale(clampDisplayScale(scale))
+    setPixelSample(null)
+  }, [])
 
   return (
     <div className="app-shell">
@@ -151,15 +209,20 @@ function App() {
           activeTool={activeTool}
           hasImage={currentImage !== null}
           isLevelsOpen={isLevelsOpen}
+          isResizeOpen={isResizeOpen}
           onOpenLevels={handleOpenLevels}
+          onOpenResize={handleOpenResize}
           onSelectTool={setActiveTool}
         />
         <ImageWorkspace
           image={currentImage}
-          displayedPixels={displayedPixels}
+          renderedPixels={renderedPixels}
+          sampleSource={displayedPixels}
+          fitRequestId={fitRequestId}
           isEyedropperActive={activeTool === 'eyedropper'}
           isLoading={isLoading}
           errorMessage={errorMessage}
+          onAutoFit={handleDisplayScaleChange}
           onPixelSample={setPixelSample}
         />
         <DocumentPanel
@@ -176,6 +239,8 @@ function App() {
         isExporting={isExporting}
         isLoading={isLoading}
         errorMessage={errorMessage}
+        displayScale={displayScale}
+        onDisplayScaleChange={handleDisplayScaleChange}
       />
 
       {currentImage && isLevelsOpen && (
@@ -185,6 +250,14 @@ function App() {
           onPreview={handleLevelsPreview}
           onApply={handleLevelsApply}
           onCancel={handleLevelsCancel}
+        />
+      )}
+
+      {currentImage && isResizeOpen && (
+        <ResizeDialog
+          image={currentImage}
+          onApply={handleResizeApply}
+          onCancel={() => setIsResizeOpen(false)}
         />
       )}
     </div>

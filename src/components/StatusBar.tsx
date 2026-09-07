@@ -1,10 +1,17 @@
 import type { RasterDocument } from '../domain/image'
+import { ZoomIn, ZoomOut } from 'lucide-react'
+import {
+  DISPLAY_SCALE_MAXIMUM,
+  DISPLAY_SCALE_MINIMUM,
+} from '../image/imageScaling'
 
 type StatusBarProps = {
   image: RasterDocument | null
   isExporting: boolean
   isLoading: boolean
   errorMessage: string
+  displayScale: number
+  onDisplayScaleChange: (scale: number) => void
 }
 
 export function StatusBar({
@@ -12,6 +19,8 @@ export function StatusBar({
   isExporting,
   isLoading,
   errorMessage,
+  displayScale,
+  onDisplayScaleChange,
 }: StatusBarProps) {
   const stateText = isLoading
     ? 'Открытие'
@@ -38,7 +47,23 @@ export function StatusBar({
       <span className="status-document" title={errorMessage || documentText}>
         {errorMessage || documentText}
       </span>
-      <span className="status-scale">100%</span>
+      <label className="status-scale" title="Масштаб отображения">
+        <ZoomOut size={13} aria-hidden="true" />
+        <input
+          type="range"
+          min={DISPLAY_SCALE_MINIMUM}
+          max={DISPLAY_SCALE_MAXIMUM}
+          step="1"
+          value={displayScale}
+          disabled={!image || isLoading}
+          aria-label="Масштаб изображения"
+          onChange={(event) => {
+            onDisplayScaleChange(Number(event.currentTarget.value))
+          }}
+        />
+        <ZoomIn size={13} aria-hidden="true" />
+        <output>{displayScale}%</output>
+      </label>
     </footer>
   )
 }

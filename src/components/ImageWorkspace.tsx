@@ -2,25 +2,34 @@ import { ImagePlus, LoaderCircle, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, type MouseEvent } from 'react'
 import type { PixelSample, RasterDocument } from '../domain/image'
 import { samplePixel } from '../image/channelProcessing'
+import { calculateFitScale } from '../image/imageScaling'
 
 type ImageWorkspaceProps = {
   image: RasterDocument | null
-  displayedPixels: ImageData | null
+  renderedPixels: ImageData | null
+  sampleSource: ImageData | null
+  fitRequestId: number
   isEyedropperActive: boolean
   isLoading: boolean
   errorMessage: string
+  onAutoFit: (scale: number) => void
   onPixelSample: (sample: PixelSample) => void
 }
 
 export function ImageWorkspace({
   image,
-  displayedPixels,
+  renderedPixels,
+  sampleSource,
+  fitRequestId,
   isEyedropperActive,
   isLoading,
   errorMessage,
+  onAutoFit,
   onPixelSample,
 }: ImageWorkspaceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const handledFitRequestRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -35,13 +44,49 @@ export function ImageWorkspace({
       return
     }
 
-    if (!displayedPixels) {
+    if (!renderedPixels) {
       context.clearRect(0, 0, canvas.width, canvas.height)
       return
     }
 
-    context.putImageData(displayedPixels, 0, 0)
-  }, [displayedPixels])
+    context.putImageData(renderedPixels, 0, 0)
+  }, [renderedPixels])
+
+  useEffect(() => {
+    if (
+      !image ||
+      fitRequestId === 0 ||
+      handledFitRequestRef.current === fitRequestId
+    ) {
+      return
+    }
+
+    const frameId = requestAnimationFrame(() => {
+      const scrollArea = scrollAreaRef.current
+
+      if (!scrollArea) {
+        return
+      }
+
+      const bounds = scrollArea.getBoundingClientRect()
+
+      if (bounds.width < 1 || bounds.height < 1) {
+        return
+      }
+
+      handledFitRequestRef.current = fitRequestId
+      onAutoFit(
+        calculateFitScale(
+          image.width,
+          image.height,
+          bounds.width,
+          bounds.height,
+        ),
+      )
+    })
+
+    return () => cancelAnimationFrame(frameId)
+  }, [fitRequestId, image, onAutoFit])
 
   function handleCanvasClick(event: MouseEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current
@@ -49,7 +94,7 @@ export function ImageWorkspace({
     if (
       event.button !== 0 ||
       !canvas ||
-      !displayedPixels ||
+      !sampleSource ||
       !isEyedropperActive
     ) {
       return
@@ -62,22 +107,22 @@ export function ImageWorkspace({
     }
 
     const x = Math.floor(
-      ((event.clientX - bounds.left) * displayedPixels.width) / bounds.width,
+      ((event.clientX - bounds.left) * sampleSource.width) / bounds.width,
     )
     const y = Math.floor(
-      ((event.clientY - bounds.top) * displayedPixels.height) / bounds.height,
+      ((event.clientY - bounds.top) * sampleSource.height) / bounds.height,
     )
 
     if (
       x < 0 ||
       y < 0 ||
-      x >= displayedPixels.width ||
-      y >= displayedPixels.height
+      x >= sampleSource.width ||
+      y >= sampleSource.height
     ) {
       return
     }
 
-    onPixelSample(samplePixel(displayedPixels, x, y))
+    onPixelSample(samplePixel(sampleSource, x, y))
   }
 
   return (
@@ -85,13 +130,13 @@ export function ImageWorkspace({
       <div className="workspace-ruler workspace-ruler-horizontal" aria-hidden="true" />
       <div className="workspace-ruler workspace-ruler-vertical" aria-hidden="true" />
 
-      <div className="workspace-scroll">
+      <div className="workspace-scroll" ref={scrollAreaRef}>
         <div className={`canvas-frame ${image ? 'canvas-frame-loaded' : ''}`}>
           <canvas
             ref={canvasRef}
             className={`image-canvas ${isEyedropperActive ? 'image-canvas-eyedropper' : ''}`}
-            width={image?.width ?? 720}
-            height={image?.height ?? 420}
+            width={renderedPixels?.width ?? 720}
+            height={renderedPixels?.height ?? 420}
             aria-label="Рабочий холст изображения"
             onClick={handleCanvasClick}
           />
